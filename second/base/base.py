@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from keras import Sequential
+from keras.models import Sequential
 from keras.layers import Conv2D, MaxPool2D, GlobalMaxPool2D, Dense
 from load_images import load_images_from_path
 
@@ -34,25 +34,36 @@ def model_compile():
 
 model = model_compile()
 
-base_dir = '/home/admin/graduate-work/data/spectrograms/voice-data-minist'
+base_dir = os.path.expanduser('~/train-cnn/data/spectrograms/voice-data-minist')
+
 x_train, y_train = [], []
 x_test, y_test = [], []
 
-# Загружаем по 500 картинок каждого класса и делим без пересечений:
-# первые 400 -> train, оставшиеся 100 -> test
 for label in range(10):
     folder = os.path.join(base_dir, str(label))
+    if not os.path.isdir(folder):
+        print(f'[WARN] папка не найдена, пропускаем: {folder}')
+        continue
+
     imgs, lbls = load_images_from_path(folder, label, 100)
-    
-    x_train.extend(imgs[:50])
-    y_train.extend(lbls[:50])
-    x_test.extend(imgs[50:])
-    y_test.extend(lbls[50:])
+    n_train = len(imgs) // 2
+    x_train.extend(imgs[:n_train])
+    y_train.extend(lbls[:n_train])
+    x_test.extend(imgs[n_train:])
+    y_test.extend(lbls[n_train:])
 
 x_train = np.array(x_train, dtype='float32') / 255.0
 y_train = np.array(y_train)
 x_test = np.array(x_test, dtype='float32') / 255.0
 y_test = np.array(y_test)
+
+perm_train = np.random.permutation(len(x_train))
+x_train, y_train = x_train[perm_train], y_train[perm_train]
+
+perm_test = np.random.permutation(len(x_test))
+x_test, y_test = x_test[perm_test], y_test[perm_test]
+
+print(f'train: {x_train.shape}, test: {x_test.shape}')
 
 hist = model.fit(
     x_train,
@@ -61,6 +72,8 @@ hist = model.fit(
     batch_size=32,
     epochs=20
 )
+
+model.save('cnn_model.keras')
 
 acc = hist.history['accuracy']
 val_acc = hist.history['val_accuracy']
@@ -73,4 +86,4 @@ plt.xlabel('Эпоха')
 plt.ylabel('Точность')
 plt.grid(True)
 plt.legend(loc='lower right')
-plt.show()
+plt.savefig('training_history.png', dpi=150, bbox_inches='tight')

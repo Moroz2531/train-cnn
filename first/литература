@@ -1,0 +1,9 @@
+звуковые базы данных: https://github.com/jim-schwoebel/voice_datasets
+
+AudioMinist:
+    https://github.com/soerenab/AudioMNIST.git:
+        Набор данных состоит из 30 000 аудиозаписей произнесенных цифр (0-9) 60 разными дикторами: https://www.sciencedirect.com/science/article/pii/S0016003223007536
+
+юпитер. Блокнот.
+    pip install notebook
+    запуск: jupyter notebook
